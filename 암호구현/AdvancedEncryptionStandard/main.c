@@ -16,13 +16,13 @@ typedef unsigned short UINT16; // 부호없는 16비트 정수
 // #### 함수 선언:
 // ### 일반 함수:
 void CopyBytes(UINT8 * dst, const UINT8 * src, const UINT16 siz);
-UINT8 GetBitAmount(UINT8 n);
+UINT8 GetBitLength(UINT8 n);
 // ### 테스트용 출력 함수:
 void TestPrint16Byte(const UINT8 * some16Bytes, const UINT8 isState);
 // ### AES 관련 함수:
-UINT8 Mul2(UINT8 a);
-UINT8 Mul3(UINT8 a);
-UINT8 MulGF256(UINT8 a0, UINT8 b0);
+UINT8 Mul2(UINT8 op1);
+UINT8 Mul3(UINT8 op1);
+UINT8 MulGF256(UINT8 op1, UINT8 op2);
 void SubWord(UINT8 * wrd);
 void RotWord(UINT8 * wrd);
 void KeyExpansion(UINT8 * roundKeys, const UINT8 * initialKey);
@@ -73,7 +73,7 @@ void CopyBytes(UINT8 * dst, const UINT8 * src, const UINT16 siz){
         dst[i] = src[i];
     }
 }
-UINT8 GetBitAmount(UINT8 n){
+UINT8 GetBitLength(UINT8 n){
     // ## n의 2진 자릿수 반환
     UINT8 count = 0;
     while(n > 0){
@@ -100,45 +100,29 @@ void TestPrint16Byte(const UINT8 * some16Bytes, const UINT8 isState){
 
 
 // ### AES 관련 함수:
-UINT8 Mul2(UINT8 a)
+UINT8 Mul2(UINT8 op1)
 {
     // ## Multiplacation by 2 in GF(2^8).
-    UINT8 b = (a >> 7) & 0b1;
-    UINT8 c = a << 1; // c(x) = x * b(x)
-    if (b)
-    {
-        c = c ^ 0x1b; // c(x) = c(x) mod p(x)
-    }
-    return c;
+    // b(x) = (x * a(x)) mod p(x)
+    return (((!((op1 >> 7) & 0b1)) * (op1 << 1)) + (((op1 >> 7) & 0b1) * ((op1 << 1) ^ 0x1b)));
 }
-UINT8 Mul3(UINT8 a)
+UINT8 Mul3(UINT8 op1)
 {
     // ## Multiplacation by 3 in GF(2^8).
-    UINT8 b;
-    b = Mul2(a) ^ a; // b(x) = (x * b(x)) + (1 * b(x))
-    return b;
+    // (x * a(x)) + (1 * a(x))
+    return ((((!((op1 >> 7) & 0b1)) * (op1 << 1)) + (((op1 >> 7) & 0b1) * ((op1 << 1) ^ 0x1b))) ^ op1);
 }
-UINT8 MulGF256(UINT8 a0, UINT8 b0){
+UINT8 MulGF256(UINT8 op1, UINT8 op2){
     // ## Multiplacation in GF(2^8)
-    UINT8 nTimes = GetBitAmount(a0);
-    UINT8 b = 0;
-    UINT8 c = 0;
-    UINT8 d = 0;
-
-    for(UINT8 i=0; i<nTimes; i++){
-        c = ((a0 >> i) & 0b1) << i;
-        d = 0;
-        if(c){
-            d = b0;
-            while(c > 1){
-                d = Mul2(d);
-                c /= 2;
-            }
-        }
-
-        b = b ^ d;
+    UINT8 n = GetBitLength(op1);
+    UINT8 result = 0;
+    UINT8 a = op2;
+    
+    for(UINT8 i=0; i<n; i++){
+        result = result ^ (((op1 >> i) & 0b1) * a);
+        a = Mul2(a);
     }
-    return b;
+    return result;
 }
 void SubWord(UINT8 * wrd){
     // ## SubWord 함수
@@ -450,12 +434,12 @@ void Encrypt(UINT8 * cipher, const UINT8 * plain, const UINT8 * initialKey){
     // # 0. 변수 초기화
     UINT8 state[16]; // 내부 state
     UINT8 roundKey[176]; // roundkey
-    // printf("round[00].input : "); TestPrint16Byte(plain, 0); printf("\n"); // test print
+    printf("round[00].input : "); TestPrint16Byte(plain, 0); printf("\n"); // test print
 
 
     // # 1. Key Expansion
     KeyExpansion(roundKey, initialKey); // key expansion
-    // printf("round[00].k_sch : ");TestPrint16Byte(&(roundKey[0]), 0); printf("\n");// test print
+    printf("round[00].k_sch : ");TestPrint16Byte(&(roundKey[0]), 0); printf("\n");// test print
 
 
     // # 2. Input To State
@@ -468,32 +452,32 @@ void Encrypt(UINT8 * cipher, const UINT8 * plain, const UINT8 * initialKey){
     for(UINT8 rnd=1; rnd<10; rnd++){
         // SubBytes
         SubBytes(state);
-        // printf("round[%02d].s_box : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].s_box : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
 
         // ShiftRows
         ShiftRows(state);
-        // printf("round[%02d].s_row : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].s_row : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
 
         // MixColumns
         MixColumns(state);
-        // printf("round[%02d].m_col : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].m_col : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
 
         // AddRoundKey
         AddRoundKey(state, &(roundKey[(rnd*16)]));
-        // printf("round[%02d].k_sch : ", rnd); TestPrint16Byte(&(roundKey[rnd*16]), 0); printf("\n"); // test print
-        // printf("round[%02d].start : ", rnd+1); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].k_sch : ", rnd); TestPrint16Byte(&(roundKey[rnd*16]), 0); printf("\n"); // test print
+        printf("round[%02d].start : ", rnd+1); TestPrint16Byte(state, 1); printf("\n"); // test print
     }
     // SubBytes
     SubBytes(state);
-    // printf("round[10].s_box : "); TestPrint16Byte(state, 1); printf("\n"); // test print
+    printf("round[10].s_box : "); TestPrint16Byte(state, 1); printf("\n"); // test print
 
     // ShiftRows
     ShiftRows(state);
-    // printf("round[10].s_row : "); TestPrint16Byte(state, 1); printf("\n"); // test print
+    printf("round[10].s_row : "); TestPrint16Byte(state, 1); printf("\n"); // test print
 
     // AddRoundKey
     AddRoundKey(state, &(roundKey[160]));
-    // printf("round[10].k_sch : "); TestPrint16Byte(&(roundKey[160]), 0); printf("\n"); // test print
+    printf("round[10].k_sch : "); TestPrint16Byte(&(roundKey[160]), 0); printf("\n"); // test print
 
 
     // # 4. State To Output

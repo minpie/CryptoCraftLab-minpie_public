@@ -7,54 +7,55 @@ AES-128 C 구현
 #include <stdio.h>
 #include <string.h>
 
-
 // #### typedef
-typedef unsigned char UINT8; // 부호없는 8비트 정수
+typedef unsigned char UINT8;   // 부호없는 8비트 정수
 typedef unsigned short UINT16; // 부호없는 16비트 정수
-
 
 // #### 함수 선언:
 // ### 일반 함수:
-void CopyBytes(UINT8 * dst, const UINT8 * src, const UINT16 siz);
+void CopyBytes(UINT8 *dst, const UINT8 *src, const UINT16 siz);
 UINT8 GetBitLength(UINT8 n);
 // ### 테스트용 출력 함수:
-void TestPrint16Byte(const UINT8 * some16Bytes, const UINT8 isState);
+void TestPrint16Byte(const UINT8 *some16Bytes, const UINT8 isState);
 // ### AES 관련 함수:
 UINT8 Mul2(UINT8 op1);
 UINT8 Mul3(UINT8 op1);
 UINT8 MulGF256(UINT8 op1, UINT8 op2);
-void SubWord(UINT8 * wrd);
-void RotWord(UINT8 * wrd);
-void KeyExpansion(UINT8 * roundKeys, const UINT8 * initialKey);
-void AddRoundKey(UINT8 * state, const UINT8 * roundKey);
-void SubBytes(UINT8 * state);
-void InvSubBytes(UINT8 * state);
-void ShiftRows(UINT8 * state);
-void InvShiftRows(UINT8 * state);
-void MixColumns(UINT8 * state);
-void InvMixColumns(UINT8 * state);
-void ConvInputToState(UINT8 * state, const UINT8 * input);
-void ConvStateToOutput(UINT8 * output, const UINT8 * state);
-void Encrypt(UINT8 * cipher, const UINT8 * plain, const UINT8 * initialKey);
-void Decrypt(UINT8 * plain, const UINT8 * cipher, const UINT8 * initialKey);
-
+void SubWord(UINT8 *wrd);
+void RotWord(UINT8 *wrd);
+void KeyExpansion(UINT8 *roundKeys, const UINT8 *initialKey);
+void AddRoundKey(UINT8 *state, const UINT8 *roundKey);
+void SubBytes(UINT8 *state);
+void InvSubBytes(UINT8 *state);
+void ShiftRows(UINT8 *state);
+void InvShiftRows(UINT8 *state);
+void MixColumns(UINT8 *state);
+void InvMixColumns(UINT8 *state);
+void ConvInputToState(UINT8 *state, const UINT8 *input);
+void ConvStateToOutput(UINT8 *output, const UINT8 *state);
+void Encrypt(UINT8 *cipher, const UINT8 *plain, const UINT8 *initialKey);
+void Decrypt(UINT8 *plain, const UINT8 *cipher, const UINT8 *initialKey);
 
 // #### main():
-int main(void){
+int main(void)
+{
     //
     // 초기값:
     UINT8 testPlain[16] = {0, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-    UINT8 testCipher[16] = {0, };
+    UINT8 testCipher[16] = {
+        0,
+    };
     UINT8 testKey[16] = {0, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
-    UINT8 test2Plain[16] = {0, };
+    UINT8 test2Plain[16] = {
+        0,
+    };
     UINT8 test2Cipher[16];
     UINT8 test2Key[16] = {0, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
 
-    
     // 암호화:
     Encrypt(testCipher, testPlain, testKey); // 암호화
-    //printf("\n\n\n");
-    // 복호화:
+    // printf("\n\n\n");
+    //  복호화:
     CopyBytes(test2Cipher, testCipher, 16);
     Decrypt(test2Plain, test2Cipher, test2Key); // 복호화
 
@@ -64,67 +65,77 @@ int main(void){
     return 0;
 }
 
-
 // #### 함수 정의:
 // ### 일반 함수:
-void CopyBytes(UINT8 * dst, const UINT8 * src, const UINT16 siz){
+void CopyBytes(UINT8 *dst, const UINT8 *src, const UINT16 siz)
+{
     // ## src에서 siz 바이트만큼 dst에 복사
-    for(UINT16 i=0; i<siz; i++){
+    for (UINT16 i = 0; i < siz; i++)
+    {
         dst[i] = src[i];
     }
 }
-UINT8 GetBitLength(UINT8 n){
+UINT8 GetBitLength(UINT8 n)
+{
     // ## n의 2진 자릿수 반환
     UINT8 count = 0;
-    while(n > 0){
+    while (n > 0)
+    {
         n = n >> 1;
         count++;
     }
     return count;
 }
 
-
 // ### 테스트용 출력 함수:
-void TestPrint16Byte(const UINT8 * some16Bytes, const UINT8 isState){
+void TestPrint16Byte(const UINT8 *some16Bytes, const UINT8 isState)
+{
     // ## 16바이트를 출력
-    if(isState){
-        for(UINT8 i=0; i<4; i++){
-            printf("%02x%02x%02x%02x", (int)some16Bytes[i], (int)some16Bytes[i+4], (int)some16Bytes[i+8], (int)some16Bytes[i+12]);
+    if (isState)
+    {
+        for (UINT8 i = 0; i < 4; i++)
+        {
+            printf("%02x%02x%02x%02x", (int)some16Bytes[i], (int)some16Bytes[i + 4], (int)some16Bytes[i + 8], (int)some16Bytes[i + 12]);
         }
-    }else{
-        for(UINT8 i=0; i<16; i++){
+    }
+    else
+    {
+        for (UINT8 i = 0; i < 16; i++)
+        {
             printf("%02x", (int)some16Bytes[i]);
         }
     }
 }
 
-
 // ### AES 관련 함수:
-UINT8 Mul2(UINT8 op1)
+UINT8 Mul2(const UINT8 op1)
 {
     // ## Multiplacation by 2 in GF(2^8).
     // b(x) = (x * a(x)) mod p(x)
-    return (((!((op1 >> 7) & 0b1)) * (op1 << 1)) + (((op1 >> 7) & 0b1) * ((op1 << 1) ^ 0x1b)));
+    return ((op1 << 1) ^ (((op1 >> 7) & 0b1) * 0x1b));
 }
-UINT8 Mul3(UINT8 op1)
+UINT8 Mul3(const UINT8 op1)
 {
     // ## Multiplacation by 3 in GF(2^8).
     // (x * a(x)) + (1 * a(x))
-    return ((((!((op1 >> 7) & 0b1)) * (op1 << 1)) + (((op1 >> 7) & 0b1) * ((op1 << 1) ^ 0x1b))) ^ op1);
+    return (((op1 << 1) ^ (((op1 >> 7) & 0b1) * 0x1b)) ^ op1);
 }
-UINT8 MulGF256(UINT8 op1, UINT8 op2){
+UINT8 MulGF256(UINT8 op1, UINT8 op2)
+{
     // ## Multiplacation in GF(2^8)
     UINT8 n = GetBitLength(op1);
     UINT8 result = 0;
     UINT8 a = op2;
-    
-    for(UINT8 i=0; i<n; i++){
+
+    for (UINT8 i = 0; i < n; i++)
+    {
         result = result ^ (((op1 >> i) & 0b1) * a);
         a = Mul2(a);
     }
     return result;
 }
-void SubWord(UINT8 * wrd){
+void SubWord(UINT8 *wrd)
+{
     // ## SubWord 함수
     // # 0. 변수 초기화
     UINT8 temp[4]; // 임시 변수
@@ -144,15 +155,16 @@ void SubWord(UINT8 * wrd){
         {0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a},
         {0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e},
         {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
-        {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
-    };
+        {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}};
     // # 1.연산:
     CopyBytes(temp, wrd, 4);
-    for(UINT8 i=0; i<4; i++){
+    for (UINT8 i = 0; i < 4; i++)
+    {
         wrd[i] = Sbox[(temp[i] >> 4)][(temp[i] & 0x0f)]; // Sbox 계산
     }
 }
-void RotWord(UINT8 * wrd){
+void RotWord(UINT8 *wrd)
+{
     // ## RotWord 함수
     // # 0. 변수 초기화
     UINT8 temp[4];
@@ -164,7 +176,8 @@ void RotWord(UINT8 * wrd){
     wrd[2] = temp[3];
     wrd[3] = temp[0];
 }
-void KeyExpansion(UINT8 * roundKeys, const UINT8 * initialKey){
+void KeyExpansion(UINT8 *roundKeys, const UINT8 *initialKey)
+{
     // ## KeyExpansion 함수
     // # 0. 변수 초기화
     UINT8 temp1[4];
@@ -179,50 +192,53 @@ void KeyExpansion(UINT8 * roundKeys, const UINT8 * initialKey){
         {0x40, 0, 0, 0},
         {0x80, 0, 0, 0},
         {0x1b, 0, 0, 0},
-        {0x36, 0, 0, 0}
-    };
-
+        {0x36, 0, 0, 0}};
 
     // # 1. w0~w3:
     CopyBytes(roundKeys, initialKey, 16);
 
     // # 2. w4~w43:
-    for(UINT8 i=4; i<44; i++){
-        CopyBytes(temp1, &(roundKeys[(i-1)*4]), 4); // temp = w[i-1]
-        if(!(i % 4)){
+    for (UINT8 i = 4; i < 44; i++)
+    {
+        CopyBytes(temp1, &(roundKeys[(i - 1) * 4]), 4); // temp = w[i-1]
+        if (!(i % 4))
+        {
             // temp1 = SubWord(RotWord(temp1)):
             RotWord(temp1);
             SubWord(temp1);
 
             // temp1 = temp1 XOR RoundConstant:
-            temp2[0] = temp1[0] ^ RoundConstant[(i/4)-1][0];
-            temp2[1] = temp1[1] ^ RoundConstant[(i/4)-1][1];
-            temp2[2] = temp1[2] ^ RoundConstant[(i/4)-1][2];
-            temp2[3] = temp1[3] ^ RoundConstant[(i/4)-1][3];
+            temp2[0] = temp1[0] ^ RoundConstant[(i / 4) - 1][0];
+            temp2[1] = temp1[1] ^ RoundConstant[(i / 4) - 1][1];
+            temp2[2] = temp1[2] ^ RoundConstant[(i / 4) - 1][2];
+            temp2[3] = temp1[3] ^ RoundConstant[(i / 4) - 1][3];
             CopyBytes(temp1, temp2, 4); // temp1 = temp2
         }
         // # w[i] = w[i-4] ^ temp1:
-        roundKeys[(i*4)] = roundKeys[((i-4)*4)] ^ temp1[0];
-        roundKeys[(i*4)+1] = roundKeys[((i-4)*4)+1] ^ temp1[1];
-        roundKeys[(i*4)+2] = roundKeys[((i-4)*4)+2] ^ temp1[2];
-        roundKeys[(i*4)+3] = roundKeys[((i-4)*4)+3] ^ temp1[3];
+        roundKeys[(i * 4)] = roundKeys[((i - 4) * 4)] ^ temp1[0];
+        roundKeys[(i * 4) + 1] = roundKeys[((i - 4) * 4) + 1] ^ temp1[1];
+        roundKeys[(i * 4) + 2] = roundKeys[((i - 4) * 4) + 2] ^ temp1[2];
+        roundKeys[(i * 4) + 3] = roundKeys[((i - 4) * 4) + 3] ^ temp1[3];
     }
 }
-void AddRoundKey(UINT8 * state, const UINT8 * roundKey){
+void AddRoundKey(UINT8 *state, const UINT8 *roundKey)
+{
     // ## AddRoundKey 함수
     // # 0. 변수 초기화
     UINT8 temp[16]; // 임시 변수
 
     // # 1. 연산:
     CopyBytes(temp, state, 16);
-    for(UINT8 i=0; i<4; i++){
-        state[i] = temp[i] ^ roundKey[(i*4)];
-        state[i+4] = temp[i+4] ^ roundKey[(i*4)+1];
-        state[i+8] = temp[i+8] ^ roundKey[(i*4)+2];
-        state[i+12] = temp[i+12] ^ roundKey[(i*4)+3];
+    for (UINT8 i = 0; i < 4; i++)
+    {
+        state[i] = temp[i] ^ roundKey[(i * 4)];
+        state[i + 4] = temp[i + 4] ^ roundKey[(i * 4) + 1];
+        state[i + 8] = temp[i + 8] ^ roundKey[(i * 4) + 2];
+        state[i + 12] = temp[i + 12] ^ roundKey[(i * 4) + 3];
     }
 }
-void SubBytes(UINT8 * state){
+void SubBytes(UINT8 *state)
+{
     // ## SubBytes 함수
     // # 0. 변수 초기화
     UINT8 temp[16]; // 임시 변수
@@ -242,15 +258,16 @@ void SubBytes(UINT8 * state){
         {0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a},
         {0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e},
         {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
-        {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
-    };
+        {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}};
     // # 1.연산:
     CopyBytes(temp, state, 16);
-    for(UINT8 i=0; i<16; i++){
+    for (UINT8 i = 0; i < 16; i++)
+    {
         state[i] = Sbox[(temp[i] >> 4)][(temp[i] & 0x0f)]; // Sbox 계산
     }
 }
-void InvSubBytes(UINT8 * state){
+void InvSubBytes(UINT8 *state)
+{
     // ## InvSubBytes 함수
     // # 0. 변수 초기화
     UINT8 temp[16]; // 임시 변수
@@ -270,16 +287,17 @@ void InvSubBytes(UINT8 * state){
         {0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f},
         {0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef},
         {0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61},
-        {0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d}
-    };
+        {0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d}};
 
     // # 1.연산:
     CopyBytes(temp, state, 16);
-    for(UINT8 i=0; i<16; i++){
+    for (UINT8 i = 0; i < 16; i++)
+    {
         state[i] = Sbox[(temp[i] >> 4)][(temp[i] & 0x0f)]; // Sbox 계산
     }
 }
-void ShiftRows(UINT8 * state){
+void ShiftRows(UINT8 *state)
+{
     // ## ShiftRows 함수
     // # 0. 변수 초기화
     UINT8 temp[16]; // 임시 변수
@@ -305,9 +323,9 @@ void ShiftRows(UINT8 * state){
     state[13] = temp[12];
     state[14] = temp[13];
     state[15] = temp[14];
-
 }
-void InvShiftRows(UINT8 * state){
+void InvShiftRows(UINT8 *state)
+{
     // ## InvShiftRows 함수
     // # 0. 변수 초기화
     UINT8 temp[16]; // 임시 변수
@@ -334,7 +352,8 @@ void InvShiftRows(UINT8 * state){
     state[14] = temp[15];
     state[15] = temp[12];
 }
-void MixColumns(UINT8 * state){
+void MixColumns(UINT8 *state)
+{
     // ## MixColumns 함수
     UINT8 temp[16];
     CopyBytes(temp, state, 16);
@@ -359,10 +378,11 @@ void MixColumns(UINT8 * state){
     state[11] = (MulGF256(0x1, temp[3])) ^ (MulGF256(0x1, temp[7])) ^ (MulGF256(0x2, temp[11])) ^ (MulGF256(0x3, temp[15]));
     state[15] = (MulGF256(0x3, temp[3])) ^ (MulGF256(0x1, temp[7])) ^ (MulGF256(0x1, temp[11])) ^ (MulGF256(0x2, temp[15]));
 }
-void InvMixColumns(UINT8 * state){
+void InvMixColumns(UINT8 *state)
+{
     // ## InvMixColumns 함수
     // # Inverse function of MixColumns().
-    UINT8 temp[16];            // 전체 복사한 값
+    UINT8 temp[16];             // 전체 복사한 값
     CopyBytes(temp, state, 16); // 복사
 
     state[0] = (MulGF256(0xe, temp[0])) ^ (MulGF256(0xb, temp[4])) ^ (MulGF256(0xd, temp[8])) ^ (MulGF256(0x9, temp[12]));
@@ -385,7 +405,8 @@ void InvMixColumns(UINT8 * state){
     state[11] = (MulGF256(0xd, temp[3])) ^ (MulGF256(0x9, temp[7])) ^ (MulGF256(0xe, temp[11])) ^ (MulGF256(0xb, temp[15]));
     state[15] = (MulGF256(0xb, temp[3])) ^ (MulGF256(0xd, temp[7])) ^ (MulGF256(0x9, temp[11])) ^ (MulGF256(0xe, temp[15]));
 }
-void ConvInputToState(UINT8 * state, const UINT8 * input){
+void ConvInputToState(UINT8 *state, const UINT8 *input)
+{
     // ## Input to State 변환 함수
     state[0] = input[0];
     state[1] = input[4];
@@ -407,7 +428,8 @@ void ConvInputToState(UINT8 * state, const UINT8 * input){
     state[14] = input[11];
     state[15] = input[15];
 }
-void ConvStateToOutput(UINT8 * output, const UINT8 * state){
+void ConvStateToOutput(UINT8 *output, const UINT8 *state)
+{
     // ## State to Output 변환 함수
     output[0] = state[0];
     output[4] = state[1];
@@ -429,82 +451,99 @@ void ConvStateToOutput(UINT8 * output, const UINT8 * state){
     output[11] = state[14];
     output[15] = state[15];
 }
-void Encrypt(UINT8 * cipher, const UINT8 * plain, const UINT8 * initialKey){
+void Encrypt(UINT8 *cipher, const UINT8 *plain, const UINT8 *initialKey)
+{
     // ## 단일 블록 암호화 함수
     // # 0. 변수 초기화
-    UINT8 state[16]; // 내부 state
+    UINT8 state[16];     // 내부 state
     UINT8 roundKey[176]; // roundkey
-    printf("round[00].input : "); TestPrint16Byte(plain, 0); printf("\n"); // test print
-
+    printf("round[00].input : ");
+    TestPrint16Byte(plain, 0);
+    printf("\n"); // test print
 
     // # 1. Key Expansion
     KeyExpansion(roundKey, initialKey); // key expansion
-    printf("round[00].k_sch : ");TestPrint16Byte(&(roundKey[0]), 0); printf("\n");// test print
-
+    printf("round[00].k_sch : ");
+    TestPrint16Byte(&(roundKey[0]), 0);
+    printf("\n"); // test print
 
     // # 2. Input To State
     ConvInputToState(state, plain); // plain to state
 
-
     // # 3. Rounds
     AddRoundKey(state, &(roundKey[0]));
     // printf("round[01].start : "); TestPrint16Byte(state, 1); printf("\n"); // test print
-    for(UINT8 rnd=1; rnd<10; rnd++){
+    for (UINT8 rnd = 1; rnd < 10; rnd++)
+    {
         // SubBytes
         SubBytes(state);
-        printf("round[%02d].s_box : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].s_box : ", rnd);
+        TestPrint16Byte(state, 1);
+        printf("\n"); // test print
 
         // ShiftRows
         ShiftRows(state);
-        printf("round[%02d].s_row : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].s_row : ", rnd);
+        TestPrint16Byte(state, 1);
+        printf("\n"); // test print
 
         // MixColumns
         MixColumns(state);
-        printf("round[%02d].m_col : ", rnd); TestPrint16Byte(state, 1); printf("\n"); // test print
+        printf("round[%02d].m_col : ", rnd);
+        TestPrint16Byte(state, 1);
+        printf("\n"); // test print
 
         // AddRoundKey
-        AddRoundKey(state, &(roundKey[(rnd*16)]));
-        printf("round[%02d].k_sch : ", rnd); TestPrint16Byte(&(roundKey[rnd*16]), 0); printf("\n"); // test print
-        printf("round[%02d].start : ", rnd+1); TestPrint16Byte(state, 1); printf("\n"); // test print
+        AddRoundKey(state, &(roundKey[(rnd * 16)]));
+        printf("round[%02d].k_sch : ", rnd);
+        TestPrint16Byte(&(roundKey[rnd * 16]), 0);
+        printf("\n"); // test print
+        printf("round[%02d].start : ", rnd + 1);
+        TestPrint16Byte(state, 1);
+        printf("\n"); // test print
     }
     // SubBytes
     SubBytes(state);
-    printf("round[10].s_box : "); TestPrint16Byte(state, 1); printf("\n"); // test print
+    printf("round[10].s_box : ");
+    TestPrint16Byte(state, 1);
+    printf("\n"); // test print
 
     // ShiftRows
     ShiftRows(state);
-    printf("round[10].s_row : "); TestPrint16Byte(state, 1); printf("\n"); // test print
+    printf("round[10].s_row : ");
+    TestPrint16Byte(state, 1);
+    printf("\n"); // test print
 
     // AddRoundKey
     AddRoundKey(state, &(roundKey[160]));
-    printf("round[10].k_sch : "); TestPrint16Byte(&(roundKey[160]), 0); printf("\n"); // test print
-
+    printf("round[10].k_sch : ");
+    TestPrint16Byte(&(roundKey[160]), 0);
+    printf("\n"); // test print
 
     // # 4. State To Output
     ConvStateToOutput(cipher, state); // state to cipher
     // printf("round[10].output: "); TestPrint16Byte(cipher, 0); printf("\n"); // test print
 }
-void Decrypt(UINT8 * plain, const UINT8 * cipher, const UINT8 * initialKey){
+void Decrypt(UINT8 *plain, const UINT8 *cipher, const UINT8 *initialKey)
+{
     // ## 단일 블록 복호화 함수
     // # 0. 변수 초기화
-    UINT8 state[16]; // 내부 state
+    UINT8 state[16];     // 내부 state
     UINT8 roundKey[176]; // roundkey
     // printf("round[00].input : "); TestPrint16Byte(cipher, 0); printf("\n"); // test print
-
 
     // # 1. Key Expansion
     KeyExpansion(roundKey, initialKey); // key expansion
     // printf("round[00].k_sch : ");TestPrint16Byte(&(roundKey[160]), 0); printf("\n");// test print
 
-
     // # 2. Input To State
     ConvInputToState(state, cipher); // plain to state
-
 
     // # 3. Rounds
     AddRoundKey(state, &(roundKey[160]));
     // printf("round[01].start : "); TestPrint16Byte(state, 1); printf("\n"); // test print
-    for(UINT8 rnd=9; rnd>0; rnd--){
+    for (UINT8 rnd = 9; rnd > 0; rnd--)
+    {
         // InvShiftRows
         InvShiftRows(state);
         // printf("round[%02d].s_row : ", (10-rnd)); TestPrint16Byte(state, 1); printf("\n"); // test print
@@ -514,7 +553,7 @@ void Decrypt(UINT8 * plain, const UINT8 * cipher, const UINT8 * initialKey){
         // printf("round[%02d].s_box : ", (10-rnd)); TestPrint16Byte(state, 1); printf("\n"); // test print
 
         // AddRoundKey
-        AddRoundKey(state, &(roundKey[(rnd*16)]));
+        AddRoundKey(state, &(roundKey[(rnd * 16)]));
         // printf("round[%02d].k_sch : ", (10-rnd));TestPrint16Byte(&(roundKey[(rnd*16)]), 0); printf("\n");// test print
         // printf("round[%02d].k_add : ", (11-rnd)); TestPrint16Byte(state, 1); printf("\n"); // test print
 
@@ -533,7 +572,6 @@ void Decrypt(UINT8 * plain, const UINT8 * cipher, const UINT8 * initialKey){
     // AddRoundKey
     AddRoundKey(state, &(roundKey[(0)]));
     // printf("round[10].k_sch : ");TestPrint16Byte(&(roundKey[0]), 0); printf("\n");// test print
-
 
     // # 4. State To Output
     ConvStateToOutput(plain, state); // state to cipher
